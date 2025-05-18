@@ -1,5 +1,6 @@
 import React from 'react';
 import { LuTrash2 } from 'react-icons/lu';
+import { getInitials } from '../../utilis/helper';
 
 const SummaryCard = ({
   colors,
@@ -20,7 +21,7 @@ const SummaryCard = ({
         <div className="flex items-start">
             <div className="flex-shrink-0 w-12 h-12 bg-white rounded-md flex items-center justify-center mr-4">
                 <span className='text-lg font-semibold text-black'>
-                    GU
+                    {getInitials(role)}
                 </span>
             </div>
             <div className="flex-grow">
