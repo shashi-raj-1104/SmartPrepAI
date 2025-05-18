@@ -10,7 +10,7 @@ const QuestionCard = ({
     onTogglePin,
 }) => {
 
-    const [isExpanded, setIsExpended] = useState(false);
+    const [isExpanded, setIsExpended] = useState(true);
     const [height, setHeight] = useState(0);
     const contentRef = useRef(null);
 

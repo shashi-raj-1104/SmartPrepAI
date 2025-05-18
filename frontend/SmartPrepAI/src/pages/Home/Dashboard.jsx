@@ -17,6 +17,7 @@ const Dashboard = () => {
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [sessions, setSessions] = useState([]);
 
+  // State for delete confirmation modal
   const [openDeletedAlert, setOpenDeletedAlert] = useState({
     open: false,
     data: null,
@@ -32,16 +33,14 @@ const Dashboard = () => {
   };
 
   const deleteSession = async (sessionData) => {
-    // Optional: Implement session deletion logic here
-    // Example:
-    // try {
-    //   await axiosInstance.delete(`${API_PATHS.SESSION.DELETE}/${sessionData._id}`);
-    //   toast.success("Session deleted successfully");
-    //   fetchAllSessions();
-    // } catch (error) {
-    //   toast.error("Failed to delete session");
-    //   console.error("Error deleting session:", error);
-    // }
+    try {
+      await axiosInstance.delete(API_PATHS.SESSION.DELETE(sessionData._id));
+      toast.success("Session deleted successfully");
+      fetchAllSessions();
+    } catch (error) {
+      toast.error("Failed to delete session");
+      console.error("Error deleting session:", error);
+    }
   };
 
   useEffect(() => {
@@ -76,7 +75,6 @@ const Dashboard = () => {
               No sessions found.
             </p>
           )}
-
         </div>
 
         <button
@@ -88,17 +86,51 @@ const Dashboard = () => {
         </button>
       </div>
 
+      {/* Create Session Modal */}
       <Modal
-      isOpen = {openCreateModal}
-      onClose = {()=>{
-        setOpenCreateModal(false);
-      }}
-      hideHeader
+        isOpen={openCreateModal}
+        onClose={() => {
+          setOpenCreateModal(false);
+        }}
+        hideHeader
       >
         <div className="">
           <CreateSessionForm />
         </div>
       </Modal>
+
+      {/* Delete Confirmation Modal */}
+      {openDeletedAlert.open && (
+        <Modal
+          isOpen={openDeletedAlert.open}
+          onClose={() => setOpenDeletedAlert({ open: false, data: null })}
+          title="Confirm Delete"
+        >
+          <div className="p-4">
+            <p>
+              Are you sure you want to delete the session{" "}
+              <strong>{openDeletedAlert.data?.role}</strong>?
+            </p>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                onClick={() => setOpenDeletedAlert({ open: false, data: null })}
+                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  deleteSession(openDeletedAlert.data);
+                  setOpenDeletedAlert({ open: false, data: null });
+                }}
+                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </DashboardLayout>
   );
 };
