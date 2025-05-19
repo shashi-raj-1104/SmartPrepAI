@@ -1,4 +1,15 @@
-export const BASE_URL = "http://localhost:8000";
+// export const BASE_URL = "http://localhost:8000";
+// src/api.js or src/services/api.js
+
+export const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
+
+export async function fetchData() {
+    const response = await fetch(`${BASE_URL}/api/data`);
+    return response.json();
+  }
+  
+
 
 export const API_PATHS = {
     AUTH: {
