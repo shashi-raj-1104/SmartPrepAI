@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { LuUser, LuUpload, LuTrash } from "react-icons/lu";
 
 const ProfilePhotoSelector = ({ image, setImage, preview, setPreview }) => {
@@ -10,7 +10,7 @@ const ProfilePhotoSelector = ({ image, setImage, preview, setPreview }) => {
       setImage(file);
       const previewURL = URL.createObjectURL(file);
       if (setPreview) {
-        setPreview(previewURL);
+        setPreview(previewURL); // Create preview URL on image change
       }
     }
   };
@@ -18,7 +18,7 @@ const ProfilePhotoSelector = ({ image, setImage, preview, setPreview }) => {
   const handleRemoveImage = () => {
     setImage(null);
     if (setPreview) {
-      setPreview(null);
+      setPreview(null); // Remove preview URL when image cleared
     }
   };
 
@@ -26,36 +26,42 @@ const ProfilePhotoSelector = ({ image, setImage, preview, setPreview }) => {
     inputRef.current.click();
   };
 
-  return <div className="flex justify-center mb-6">
-    <input type="file"
-    accept='image/*'
-    ref = {inputRef}
-    onChange={handleImageChange}
-    className='hidden' />
+  return (
+    <div className="flex justify-center mb-6">
+      <input
+        type="file"
+        accept="image/*"
+        ref={inputRef}
+        onChange={handleImageChange}
+        className="hidden"
+      />
 
-    {!image? (
-        <div className="w-20 h-20 flex items-center justify-center bg-orange-50 rounded-full relative cursor-pointer ">
-            <LuUser className='text-4xl text-orange-500'/>
-            <button 
-            type='button'
-            className='w-8 h-8 flex items-center justify-center bg-linear-to-r from-orange-500/85 to-orange-600 text-white rounded-full absolute -buttom-1 -right-1 cursor-pointer'
-            onClick={onChooseFile}>
-                <LuUpload/>
-            </button>
-        </div>
-    ):(
-        <div className="relative">
-            <img src={preview || previewURL} alt="profile photo" className='w-20 h-20 rounded-full object-cover' />
-            <button
-            type='button'
-            className='w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full absolute -buttom-1 -right-1 cursor-pointer '
+      <div className="relative">
+        <img
+          src={preview || "/default-avatar.jpg"} // fallback avatar
+          alt="profile"
+          className="w-20 h-20 rounded-full object-cover"
+        />
+        {image ? (
+          <button
+            type="button"
+            className="w-8 h-8 flex items-center justify-center bg-red-500 text-white rounded-full absolute -bottom-1 -right-1 cursor-pointer"
             onClick={handleRemoveImage}
-            >
-                <LuTrash/>
-            </button>
-        </div>
-    )}
-  </div>
+          >
+            <LuTrash />
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="w-8 h-8 flex items-center justify-center bg-gradient-to-r from-orange-500/85 to-orange-600 text-white rounded-full absolute -bottom-1 -right-1 cursor-pointer"
+            onClick={onChooseFile}
+          >
+            <LuUpload />
+          </button>
+        )}
+      </div>
+    </div>
+  );
 };
 
 export default ProfilePhotoSelector;

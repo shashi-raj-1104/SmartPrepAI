@@ -6,6 +6,7 @@ import { UserContext } from '../../context/userContext';
 import axiosInstance from '../../utilis/axiosInstance';
 import { API_PATHS } from '../../utilis/apiPaths';
 import uploadImage from '../../utilis/uploadImage';
+import SpinnerLoader from '../../components/Loader/SpinnerLoader';
 
 const SignUp = ({ setCurrentPage }) => {
   const [profilePic, setProfilePic] = useState(null);
@@ -14,8 +15,9 @@ const SignUp = ({ setCurrentPage }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const {updateUser} = useContext(UserContext);
+  const { updateUser } = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
@@ -30,9 +32,10 @@ const SignUp = ({ setCurrentPage }) => {
     console.log({ profilePic, fullName, email, password });
     // You might navigate or call an API here
     setError("");
-    try{
+    setLoading(true);
+    try {
       let profileImageUrl = "";
-      if(profilePic){
+      if (profilePic) {
         const imgUplaodRes = await uploadImage(profilePic);
         profileImageUrl = imgUplaodRes.imageUrl || "";
       }
@@ -45,17 +48,19 @@ const SignUp = ({ setCurrentPage }) => {
       });
 
       const token = response.data;
-      if(token){
+      if (token) {
         localStorage.setItem("token", token);
         updateUser(response.data);
         navigate("/dashboard");
       }
-    }catch(error){
-      if(error.response && error.response.data.message){
+    } catch (error) {
+      if (error.response && error.response.data.message) {
         setError(error.response.data.message);
-      }else{
+      } else {
         setError("Something went wrong. Please try again.")
       }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -101,9 +106,18 @@ const SignUp = ({ setCurrentPage }) => {
 
         <button
           type='submit'
-          className='mt-4 w-full bg-orange-300 hover:bg-orange-600 text-white py-2 rounded text-sm font-semibold'
+          disabled={loading}
+          className='mt-4 w-full bg-orange-300 hover:bg-orange-600 text-white py-2 rounded text-sm font-semibold flex justify-center items-center min-h-[38px]'
         >
-          Sign Up
+          {loading ? (
+            <div className="flex items-center gap-2">
+              <SpinnerLoader />
+              <span>Signing up...</span>
+            </div>
+          ) : (
+            "Sign Up"
+          )}
+
         </button>
 
         <p className='text-[13px] text-slate-800 mt-3'>
