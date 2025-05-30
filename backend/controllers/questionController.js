@@ -75,3 +75,25 @@ exports.updateQuestionNote = async (req, res) => {
         res.status(500).json({ message: "Server Error" });
     }
 };
+
+
+exports.deleteQuestion = async (req, res) => {
+    try {
+      const questionId = req.params.id;
+  
+      const question = await Question.findByIdAndDelete(questionId);
+      if (!question) {
+        return res.status(404).json({ message: "Question not found" });
+      }
+  
+      // Remove the question from the session's question list
+      await Session.findByIdAndUpdate(question.session, {
+        $pull: { questions: question._id },
+      });
+  
+      res.status(200).json({ message: "Question deleted successfully" });
+    } catch (error) {
+      console.error("Delete error:", error);
+      res.status(500).json({ message: "Server Error" });
+    }
+  };

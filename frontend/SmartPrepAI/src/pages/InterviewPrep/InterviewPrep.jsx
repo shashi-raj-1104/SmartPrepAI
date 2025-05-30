@@ -25,6 +25,12 @@ const InterviewPrep = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isUpdateLoader, setIsUpdateLoader] = useState(false);
 
+  const [showCustomQuestionInput, setShowCustomQuestionInput] = useState(false);
+  const [customQuestion, setCustomQuestion] = useState("");
+  const [isSubmittingCustom, setIsSubmittingCustom] = useState(false);
+
+  const [error, setError] = useState("");
+
   const fetchSessionDetailsById = async () => {
     try {
       const response = await axiosInstance.get(
@@ -40,28 +46,28 @@ const InterviewPrep = () => {
   };
 
   const generateConceptExplanation = async (question) => {
-      try {
-        setErrorMsg("");
-        setExplanation(null);
+    try {
+      setErrorMsg("");
+      setExplanation(null);
 
-        setIsLoading(true);
-        setOpenLeanMoreDrawer(true);
+      setIsLoading(true);
+      setOpenLeanMoreDrawer(true);
 
-        const response = await axiosInstance.post(API_PATHS.AI.GENERATE_EXPLANATION, {
-          question,
-        });
+      const response = await axiosInstance.post(API_PATHS.AI.GENERATE_EXPLANATION, {
+        question,
+      });
 
-        if(response.data){
-          setExplanation(response.data);
-        }
-      } catch (error) {
-          setExplanation(null);
-          setErrorMsg("Failed to generate explanation, Try again later ");
-          console.error("Error:", error);
-      }finally{
-        setIsLoading(false);
+      if (response.data) {
+        setExplanation(response.data);
       }
-   };
+    } catch (error) {
+      setExplanation(null);
+      setErrorMsg("Failed to generate explanation, Try again later ");
+      console.error("Error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const toggleQuestionPinStatus = async (questionId) => {
     try {
@@ -80,39 +86,94 @@ const InterviewPrep = () => {
 
   };
 
-  const uploadMoreQuestions = async () => { 
-      try {
-        setIsUpdateLoader(true);
+  const uploadMoreQuestions = async () => {
+    try {
+      setIsUpdateLoader(true);
 
-        const aiResponse = await axiosInstance.post(API_PATHS.AI.GENERATE_QUESTIONS, {
-          role: sessionData?.role,
-          experience: sessionData?.experience,
-          topicsToFocus: sessionData?.topicsToFocus,
-          numberOfQuestions : 10,
-        });
+      const aiResponse = await axiosInstance.post(API_PATHS.AI.GENERATE_QUESTIONS, {
+        role: sessionData?.role,
+        experience: sessionData?.experience,
+        topicsToFocus: sessionData?.topicsToFocus,
+        numberOfQuestions: 10,
+      });
 
-        const generatedQuestions = aiResponse.data;
+      const generatedQuestions = aiResponse.data;
 
-        const response = await axiosInstance.post(API_PATHS.QUESTION.ADD_TO_SESSION,{
-          sessionId,
-          questions: generatedQuestions,
+      const response = await axiosInstance.post(API_PATHS.QUESTION.ADD_TO_SESSION, {
+        sessionId,
+        questions: generatedQuestions,
 
-        });
+      });
 
-        if(response.data){
-            // toast.success("Added MoreQ&A!!");
-            await fetchSessionDetailsById();
-        }
-      } catch (error) {
-        if(error.response && error.response.data.message){
-          setErrorMsg(error.response.data.message);
-        }else{
-          setErrorMsg("Something went wrong. Please try again.");
-        }
-      }finally{
-        setIsUpdateLoader(false);
+      if (response.data) {
+        // toast.success("Added MoreQ&A!!");
+        await fetchSessionDetailsById();
       }
+    } catch (error) {
+      if (error.response && error.response.data.message) {
+        setErrorMsg(error.response.data.message);
+      } else {
+        setErrorMsg("Something went wrong. Please try again.");
+      }
+    } finally {
+      setIsUpdateLoader(false);
+    }
   };
+
+  const handleDeleteQuestion = async (questionId) => {
+    try {
+      await axiosInstance.delete(API_PATHS.QUESTION.DELETE(questionId));
+      await fetchSessionDetailsById(); // Refresh session data
+    } catch (error) {
+      console.error("Failed to delete question:", error);
+      // Optionally: show toast or set errorMsg
+    }
+  };
+
+
+  const handleAddCustomQuestion = async () => {
+    try {
+      setIsSubmittingCustom(true);
+      if (!customQuestion.trim()) {
+        setError("Question cannot be empty.");
+        return;
+      }
+      const aiResponse = await axiosInstance.post(
+        API_PATHS.AI.ADD_CUSTOM_QUESTION,
+        {
+          question: customQuestion.trim(),
+        }
+      );
+
+      const generatedQuestions = aiResponse.data;
+      console.log(generatedQuestions);
+      await axiosInstance.post(API_PATHS.QUESTION.ADD_TO_SESSION, {
+        sessionId,
+        questions: [{
+          question: generatedQuestions.correctedQuestion,
+          answer: generatedQuestions.answer
+        }],
+      });
+
+      if (generatedQuestions.correctedQuestion && generatedQuestions.answer) {
+        await fetchSessionDetailsById();
+        setCustomQuestion("");
+        setShowCustomQuestionInput(false);
+      }
+      
+    } catch (error) {
+      if (error.generatedQuestions && error.generatedQuestions.data.message) {
+        setErrorMsg(error.generatedQuestions.data.message);
+      } else {
+        setErrorMsg("Something went wrong. Please try again.");
+      }
+    } finally {
+      setIsSubmittingCustom(false);
+    }
+  };
+
+
+
 
   useEffect(() => {
     if (sessionId) {
@@ -166,24 +227,49 @@ const InterviewPrep = () => {
                         onLearnMore={() => generateConceptExplanation(data.question)}
                         isPinned={data?.isPinned}
                         onTogglePin={() => toggleQuestionPinStatus(data._id)}
+                        onDelete={() => handleDeleteQuestion(data._id)}
                       />
-                    
 
-                    {!isLoading && sessionData?.questions?.length === index+1 && (
-                      <div className="flex items-center justify-center mt-5">
-                        <button className='flex items-center gap-3 text-sm text-white font-medium bg-black px-5 py-2 mr-2 rounded text-nowrap cursor-pointer'
-                          disabled={isLoading || isUpdateLoader}
-                          onClick={uploadMoreQuestions}
-                        >
-                          {isUpdateLoader ? (
-                            <SpinnerLoader/>
-                          ):(
-                            <LuListCollapse className='text-lg'/>
-                          )}{" "}
-                          Load More
-                        </button>
-                      </div>
-                    )}
+
+                      {!isLoading && sessionData?.questions?.length === index + 1 && (
+                        <div className="flex flex-col items-center justify-center mt-5 space-y-4">
+                          <button
+                            className='flex items-center gap-3 text-sm text-white font-medium bg-black px-5 py-2 rounded cursor-pointer'
+                            disabled={isLoading || isUpdateLoader}
+                            onClick={uploadMoreQuestions}
+                          >
+                            {isUpdateLoader ? <SpinnerLoader /> : <LuListCollapse className='text-lg' />}{" "}
+                            Load More
+                          </button>
+
+                          <button
+                            className='text-blue-600 underline text-sm cursor-pointer'
+                            onClick={() => setShowCustomQuestionInput(prev => !prev)}
+                          >
+                            {showCustomQuestionInput ? "Cancel" : "Add Custom Question"}
+                          </button>
+
+                          {showCustomQuestionInput && (
+                            <div className="w-full max-w-xl mt-3">
+                              <textarea
+                                rows={3}
+                                value={customQuestion}
+                                onChange={(e) => setCustomQuestion(e.target.value)}
+                                placeholder="Type your custom question here..."
+                                className="w-full p-2 border rounded resize-none"
+                                disabled={isSubmittingCustom}
+                              />
+                              <button
+                                className="mt-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
+                                onClick={handleAddCustomQuestion}
+                                disabled={isSubmittingCustom || !customQuestion.trim()}
+                              >
+                                {isSubmittingCustom ? "Adding..." : "Generate Answer & Add Question"}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </>
                   </motion.div>
                 );
@@ -192,19 +278,19 @@ const InterviewPrep = () => {
           </div>
         </div>
         <div className="">
-          <Drawer 
-            isOpen = {openLeanMoreDrawer}
-            onClose = {()=>setOpenLeanMoreDrawer(false)}
-            title = {!isLoading && explanation?.title}
+          <Drawer
+            isOpen={openLeanMoreDrawer}
+            onClose={() => setOpenLeanMoreDrawer(false)}
+            title={!isLoading && explanation?.title}
           >
             {errorMsg && (
               <p className='flex gap-2 text-sm text-amber-600 font-medium'>
-                <LuCircleAlert className='mt-1'/> {errorMsg}
+                <LuCircleAlert className='mt-1' /> {errorMsg}
               </p>
             )}
             {isLoading && <SkeletonLoader />}
             {!isLoading && explanation && (
-              <AIResponsePreview content={explanation?.explanation}/>
+              <AIResponsePreview content={explanation?.explanation} />
             )}
           </Drawer>
         </div>

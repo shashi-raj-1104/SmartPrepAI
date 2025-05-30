@@ -14,25 +14,37 @@ export const CARD_BG = [
 
 // timestamp 18:10
 export const APP_FEATURES = [
-    {
-      id: "01",
-      title: "Tailored just for You",
-      description: "get interview question and model answer"
-    },
-    {
-      id: "02",
-      title: "Tailored just for You",
-      description: "get interview question and model answer"
-    },
-    {
-      id: "03",
-      title: "Tailored just for You",
-      description: "get interview question and model answer"
-    },
-    {
-      id: "04",
-      title: "Tailored just for You",
-      description: "get interview question and model answer"
-    }
-  ];
+  {
+    id: "01",
+    title: "AI-Powered Interview Questions",
+    description:
+      "Generate smart interview questions based on your role, domain, experience, and focus topics. The app tailors content to your preparation goals."
+  },
+  {
+    id: "02",
+    title: "Model Answers with Explanations",
+    description:
+      "Access high-quality answers with structured explanations. If something’s unclear, request an AI-generated breakdown to understand better."
+  },
+  {
+    id: "03",
+    title: "Domain, Difficulty & Session Customization",
+    description:
+      "Select domain (e.g., DSA, Web Dev), difficulty level, and create multiple preparation sessions for different roles you're targeting."
+  },
+  {
+    id: "04",
+    title: "Flexible Question Management",
+    description:
+      "Pin important questions, delete ones you don't need, and add custom questions you find valuable — complete control over your prep."
+  },
+  {
+    id: "05",
+    title: "Clean & Developer-Friendly UI",
+    description:
+      "Enjoy a great user experience with a clean interface. Code snippets are styled for readability and can be easily copied for quick use."
+  }
+];
+
+
   

@@ -8,7 +8,8 @@ const sessionRoutes = require("./routes/sessionRoutes");
 const questionRoutes = require("./routes/questionRoutes");
 const { protect } = require("./middlewares/authMiddleware");
 
-const {generateInterviewQuestions, generateConceptExplanation} = require("./controllers/aiController");
+
+const {generateInterviewQuestions, generateConceptExplanation, addCustomQuestion} = require("./controllers/aiController");
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/question", questionRoutes);
 
 app.use("/api/ai/generate-questions", protect, generateInterviewQuestions);
 app.use("/api/ai/generate-explanation", protect, generateConceptExplanation);
+app.post("/api/ai/custom", protect, addCustomQuestion);
 
 app.use("/uploads", express.static(path.join(__dirname, "uploads"), {}));
 

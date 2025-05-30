@@ -25,6 +25,7 @@ export const API_PATHS = {
     AI: {
         GENERATE_QUESTIONS: "/api/ai/generate-questions",
         GENERATE_EXPLANATION: "/api/ai/generate-explanation",
+        ADD_CUSTOM_QUESTION: "/api/ai/custom",
     },
 
     SESSION: {
@@ -38,5 +39,8 @@ export const API_PATHS = {
         ADD_TO_SESSION: "/api/question/add",
         PIN: (id)=> `/api/question/${id}/pin`,
         UPDATE_NOTE: (id)=>`/api/question/${id}/note`,
+        DELETE: (id) => `/api/question/${id}`,
+        
+
     },
 };

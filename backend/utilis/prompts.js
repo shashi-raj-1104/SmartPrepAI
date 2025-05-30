@@ -37,6 +37,27 @@ const questionAnswerPrompt = (role, experience, topicsToFocus, numberOfQuestions
   Important: Do NOT add any extra text outside the JSON format. Only return valid JSON.
   `;
   };
+
+  const customQuestionCorrectionPrompt = (question) => {
+    return `
+  You are an AI assistant helping users improve interview questions and generate answers.
   
-  module.exports = { questionAnswerPrompt, conceptExplainPrompt };
+  Task:
+  - Fix any grammar or spelling issues in the user's question.
+  - Then generate a concise, beginner-friendly answer.
+  - If helpful, include a small code block in the answer.
+  
+  Return a valid JSON object like:
+  {
+    "correctedQuestion": "Corrected version of the question?",
+    "answer": "Answer here."
+  }
+  
+  Important: Do NOT include any extra text, explanation, or markdown. Only return valid JSON.
+  User's Question: "${question}"
+    `;
+  };
+  
+  
+  module.exports = { questionAnswerPrompt, conceptExplainPrompt, customQuestionCorrectionPrompt };
   
